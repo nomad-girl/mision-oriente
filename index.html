@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISIÓN ORIENTE — ACTIVADA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap');
+
+  :root {
+    --red: #E63946;
+    --red-dark: #9B1D20;
+    --gold: #FFD700;
+    --gold-dark: #B8860B;
+    --neon-green: #39FF14;
+    --neon-cyan: #00FFFF;
+    --neon-pink: #FF6EC7;
+    --turquoise: #1ABC9C;
+    --ink: #0A0A1A;
+    --ink-mid: #151530;
+    --ink-light: #1E1E3F;
+    --cream: #FFFBF0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { font-size: 18px; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--ink);
+    color: var(--cream);
+    overflow-x: hidden;
+    image-rendering: pixelated;
+  }
+
+  /* ===== SCANLINES & VIGNETTE ===== */
+  .crt-overlay {
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 6px),
+      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%);
+    pointer-events: none !important;
+    z-index: 9999;
+  }
+
+  /* ===== FULLSCREEN BUTTON ===== */
+  .fullscreen-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 150;
+    background: rgba(255,215,0,0.15);
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .fullscreen-btn:hover { background: var(--gold); color: var(--ink); }
+
+  /* ===== SCREEN SYSTEM ===== */
+  .screen {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+    position: relative;
+    animation: screenIn 0.5s ease-out;
+  }
+
+  .screen:not(#hero):not(#final) {
+    justify-content: flex-start;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+  }
+
+  .screen.active { display: flex; }
+
+  @keyframes screenIn {
+    0% { opacity: 0; filter: brightness(3); }
+    30% { opacity: 1; filter: brightness(1.5); }
+    100% { opacity: 1; filter: brightness(1); }
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes stampIn {
+    0% { transform: scale(4) rotate(-20deg); opacity: 0; }
+    50% { transform: scale(0.8) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+  }
+  @keyframes rainbowBorder {
+    0% { border-color: var(--red); }
+    25% { border-color: var(--gold); }
+    50% { border-color: var(--neon-cyan); }
+    75% { border-color: var(--neon-pink); }
+    100% { border-color: var(--red); }
+  }
+  @keyframes loadFill { to { width: 100%; } }
+
+  /* ===== NAV ARROWS ===== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
+    height: 80px;
+    border: 3px solid var(--gold);
+    background: rgba(0,0,0,0.8);
+    color: var(--gold);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 150;
+    text-shadow: 0 0 10px var(--gold);
+    box-shadow: 0 0 15px rgba(255,215,0,0.15);
+  }
+
+  .nav-arrow:hover {
+    background: var(--gold);
+    color: var(--ink);
+    text-shadow: none;
+    box-shadow: 0 0 30px rgba(255,215,0,0.4);
+  }
+
+  #navPrev { left: 8px; border-radius: 4px; }
+  #navNext { right: 8px; border-radius: 4px; }
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  @media (max-width: 520px) {
+    .nav-arrow { width: 44px; height: 60px; font-size: 1.1rem; }
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 28px;
+    background: var(--ink);
+    z-index: 100;
+    border-bottom: 2px solid var(--gold-dark);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 16px;
+    background: #222;
+    border: 2px solid #555;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: repeating-linear-gradient(90deg, var(--neon-green) 0px, var(--neon-green) 8px, #00CC00 8px, #00CC00 10px);
+    transition: width 0.8s steps(20);
+    box-shadow: 0 0 10px var(--neon-green);
+  }
+
+  .progress-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: var(--gold);
+    margin-left: 10px;
+    white-space: nowrap;
+  }
+
+  /* ===== HUD ===== */
+  .hud {
+    position: fixed;
+    top: 36px;
+    left: 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--neon-pink);
+    z-index: 100;
+    text-shadow: 1px 1px 0px var(--red-dark);
+  }
+  .hud-score { color: var(--gold); margin-top: 4px; }
+
+  .level-badge {
+    position: fixed;
+    top: 36px;
+    right: 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--gold);
+    z-index: 100;
+    text-shadow: 2px 2px 0px var(--red-dark);
+  }
+
+  /* ===== HERO ===== */
+  #hero {
+    background: radial-gradient(circle at 50% 40%, var(--ink-light) 0%, var(--ink) 70%);
+    text-align: center;
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding-top: 3vh;
+    padding-bottom: 2rem;
+  }
+
+  .stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--gold);
+    animation: blink 2s infinite;
+  }
+
+  .hero-top-deco {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px var(--gold));
+  }
+
+  .hero-insert-coin {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    color: var(--neon-cyan);
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+    animation: blink 1.5s infinite;
+    text-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  .hero-title-box {
+    border: 4px solid var(--gold);
+    padding: 0.8rem 2rem;
+    margin-bottom: 0.6rem;
+    position: relative;
+    background: rgba(0,0,0,0.5);
+    box-shadow: 0 0 20px rgba(255,215,0,0.2), inset 0 0 30px rgba(255,215,0,0.05);
+    animation: rainbowBorder 4s infinite;
+  }
+  .hero-title-box::before, .hero-title-box::after {
+    content: '◆'; position: absolute; color: var(--gold); font-size: 1rem;
+  }
+  .hero-title-box::before { top: -10px; left: -10px; }
+  .hero-title-box::after { bottom: -10px; right: -10px; }
+  .corner-tr, .corner-bl { position: absolute; color: var(--gold); font-size: 1rem; }
+  .corner-tr { top: -10px; right: -10px; }
+  .corner-bl { bottom: -10px; left: -10px; }
+
+  .hero-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    color: var(--gold);
+    text-shadow: 3px 3px 0px var(--red-dark), 6px 6px 0px rgba(0,0,0,0.3);
+    line-height: 1.4;
+    letter-spacing: 2px;
+  }
+
+  .hero-subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(0.6rem, 2vw, 0.9rem);
+    color: var(--neon-cyan);
+    text-shadow: 0 0 15px var(--neon-cyan);
+    margin-top: 0.6rem;
+    letter-spacing: 4px;
+  }
+
+  .hero-flags {
+    font-size: 2rem;
+    margin: 0.4rem 0;
+    letter-spacing: 1rem;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.3));
+  }
+
+  .hero-message {
+    max-width: 550px;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: rgba(255,251,240,0.85);
+    margin-bottom: 0.6rem;
+  }
+
+  .hero-message .agent-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.85rem;
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+  }
+
+  .countdown-box {
+    border: 2px solid var(--red);
+    padding: 0.5rem 1.5rem;
+    margin-bottom: 0.8rem;
+    background: rgba(230,57,70,0.1);
+    position: relative;
+  }
+  .countdown-box::before {
+    content: '⚠'; position: absolute; left: -1.8rem; top: 50%; transform: translateY(-50%);
+    font-size: 1.4rem; animation: blink 1s infinite;
+  }
+  .countdown {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    color: var(--red);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--red);
+  }
+  .countdown span {
+    font-size: 1.8rem;
+    color: var(--gold);
+    text-shadow: 0 0 15px var(--gold);
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.8rem 2rem;
+    border: 3px solid;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: transparent;
+    line-height: 1.6;
+  }
+  .btn::after { content: ' ▶'; font-size: 0.55rem; }
+
+  .btn-primary { color: var(--gold); border-color: var(--gold); text-shadow: 0 0 10px var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.2), inset 0 0 15px rgba(255,215,0,0.05); }
+  .btn-primary:hover { background: var(--gold); color: var(--ink); text-shadow: none; box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+  .btn-red { color: var(--red); border-color: var(--red); text-shadow: 0 0 10px var(--red); }
+  .btn-red:hover { background: var(--red); color: var(--cream); text-shadow: none; }
+  .btn-cyan { color: var(--neon-cyan); border-color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+  .btn-cyan:hover { background: var(--neon-cyan); color: var(--ink); text-shadow: none; }
+  .btn-green { color: var(--neon-green); border-color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); }
+  .btn-green:hover { background: var(--neon-green); color: var(--ink); text-shadow: none; }
+  .btn:active { transform: scale(0.95); }
+  .btn-disabled { opacity: 0.25; pointer-events: none; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--ink-mid);
+    border: 3px solid;
+    padding: 0.8rem 1.2rem;
+    max-width: 580px;
+    width: 100%;
+    position: relative;
+  }
+  .card-red { border-color: var(--red); box-shadow: 0 0 20px rgba(230,57,70,0.15); }
+  .card-cyan { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0,255,255,0.1); }
+  .card-gold { border-color: var(--gold); box-shadow: 0 0 20px rgba(255,215,0,0.1); }
+  .card-green { border-color: var(--neon-green); box-shadow: 0 0 20px rgba(57,255,20,0.1); }
+
+  .card::before, .card::after { font-family: 'Press Start 2P', monospace; font-size: 0.4rem; position: absolute; color: inherit; opacity: 0.3; }
+  .card::before { content: '[ ]'; top: 8px; left: 10px; }
+  .card::after { content: '[ ]'; bottom: 8px; right: 10px; }
+
+  .card-level-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px dashed rgba(255,255,255,0.1);
+  }
+
+  .card-level-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.8rem;
+    color: var(--gold);
+    text-shadow: 2px 2px 0px var(--red-dark);
+    line-height: 1;
+  }
+
+  .card-level-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 5px var(--neon-cyan);
+  }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.9rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+    line-height: 1.8;
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: rgba(255,251,240,0.7);
+    margin-bottom: 0.3rem;
+    line-height: 1.4;
+  }
+
+  /* ===== CHECKLIST ===== */
+  .checklist { list-style: none; margin-bottom: 0.4rem; }
+
+  .checklist li {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    user-select: none;
+    background: rgba(255,255,255,0.02);
+  }
+  .checklist li:hover { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.03); }
+  .checklist li.checked { border-color: var(--neon-green); background: rgba(57,255,20,0.05); }
+
+  .check-box {
+    width: 20px; height: 20px;
+    border: 2px solid #555;
+    margin-right: 0.7rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    transition: all 0.2s ease;
+  }
+  .checked .check-box { background: var(--neon-green); border-color: var(--neon-green); color: var(--ink); box-shadow: 0 0 8px var(--neon-green); }
+
+  .check-label { font-size: 0.85rem; flex-grow: 1; }
+  .checked .check-label { text-decoration: line-through; opacity: 0.4; }
+
+  .check-emoji { font-size: 1.2rem; margin-left: 0.5rem; opacity: 0; transition: opacity 0.3s ease; }
+  .checked .check-emoji { opacity: 1; }
+
+  /* ===== CHAOS METER ===== */
+  .chaos-meter {
+    text-align: center; padding: 0.4rem; border: 2px solid var(--red);
+    margin-bottom: 0.5rem; background: rgba(230,57,70,0.05);
+  }
+  .chaos-label {
+    font-family: 'Press Start 2P', monospace; font-size: 0.55rem;
+    color: var(--red); text-shadow: 0 0 5px var(--red); margin-bottom: 0.5rem;
+  }
+  .chaos-bar { height: 18px; border: 2px solid #555; background: #111; overflow: hidden; }
+  .chaos-fill {
+    height: 100%; transition: all 0.5s steps(10);
+    background: repeating-linear-gradient(90deg, var(--red) 0px, var(--red) 6px, #AA0000 6px, #AA0000 8px);
+    box-shadow: 0 0 8px var(--red);
+  }
+
+  /* ===== FLIGHT CARDS ===== */
+  .flight-card { border: 2px solid var(--gold-dark); padding: 1.2rem; margin-bottom: 1rem; background: rgba(255,215,0,0.03); }
+  .flight-route { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+  .flight-city { font-family: 'Press Start 2P', monospace; font-size: 0.95rem; color: var(--gold); text-shadow: 1px 1px 0px var(--red-dark); }
+  .flight-arrow { color: var(--neon-cyan); font-size: 1.3rem; margin: 0 0.3rem; animation: pulse 2s infinite; }
+  .flight-detail { font-size: 0.95rem; color: rgba(255,251,240,0.6); line-height: 1.7; }
+  .flight-tag { font-family: 'Press Start 2P', monospace; font-size: 0.4rem; color: var(--neon-pink); letter-spacing: 1px; margin-bottom: 0.4rem; text-shadow: 0 0 5px var(--neon-pink); }
+
+  /* ===== INFO LIST ===== */
+  .info-list { list-style: none; margin-bottom: 1.5rem; }
+  .info-list li {
+    padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 1.05rem; line-height: 1.7;
+    display: flex; align-items: flex-start; gap: 0.8rem; color: rgba(255,251,240,0.8);
+  }
+  .info-list li:last-child { border-bottom: none; }
+  .info-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+  /* ===== PHRASES ===== */
+  .phrase-section { margin-bottom: 1.5rem; }
+  .phrase-header {
+    font-family: 'Press Start 2P', monospace; font-size: 0.5rem;
+    letter-spacing: 3px; margin-bottom: 1rem; padding: 0.5rem 0.8rem; display: inline-block;
+  }
+  .phrase-header.china { color: var(--red); border: 1px solid var(--red); text-shadow: 0 0 5px var(--red); }
+  .phrase-header.turkey { color: var(--neon-cyan); border: 1px solid var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
+
+  .phrase-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 0.5rem;
+    padding: 0.6rem 0.8rem; font-size: 1.05rem; margin-bottom: 0.3rem;
+    border-left: 2px solid transparent; transition: all 0.2s ease;
+  }
+  .phrase-row:hover { border-left-color: var(--gold); background: rgba(255,215,0,0.03); }
+  .phrase-word { font-weight: 600; color: var(--cream); }
+  .phrase-pron {
+    font-family: 'Press Start 2P', monospace; font-size: 0.45rem;
+    color: var(--neon-green); text-shadow: 0 0 3px var(--neon-green); display: flex; align-items: center;
+  }
+  .phrase-es { font-size: 0.9rem; color: rgba(255,251,240,0.4); grid-column: 1 / -1; }
+
+  .pixel-divider {
+    text-align: center; font-family: 'Press Start 2P', monospace; font-size: 0.4rem;
+    color: var(--gold); opacity: 0.3; margin: 1.5rem 0; letter-spacing: 4px;
+  }
+
+  /* ===== QUIZ ===== */
+  .quiz-counter {
+    font-family: 'Press Start 2P', monospace; font-size: 0.45rem;
+    color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); margin-bottom: 1rem; letter-spacing: 2px;
+  }
+  .quiz-question {
+    font-family: 'Press Start 2P', monospace; font-size: 0.7rem;
+    line-height: 2.2; margin-bottom: 1.2rem; color: var(--cream);
+  }
+  .quiz-options { list-style: none; margin-bottom: 1rem; }
+  .quiz-option {
+    padding: 1rem 1.2rem; border: 2px solid rgba(255,255,255,0.15);
+    margin-bottom: 0.6rem; cursor: pointer; font-size: 1.05rem;
+    transition: all 0.2s ease; display: flex; align-items: center; gap: 0.8rem;
+  }
+  .quiz-option::before {
+    content: attr(data-letter); font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem; color: var(--gold); flex-shrink: 0;
+  }
+  .quiz-option:hover { border-color: var(--gold); background: rgba(255,215,0,0.05); }
+  .quiz-option.correct { border-color: var(--neon-green); background: rgba(57,255,20,0.1); box-shadow: 0 0 10px rgba(57,255,20,0.2); }
+  .quiz-option.wrong { border-color: var(--red); background: rgba(230,57,70,0.1); opacity: 0.5; }
+  .quiz-option.disabled { pointer-events: none; }
+
+  .quiz-feedback {
+    padding: 1rem; border: 2px solid; font-size: 1rem; margin-bottom: 1rem;
+    display: none; animation: slideUp 0.3s ease-out; line-height: 1.6;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.success { border-color: var(--neon-green); color: var(--neon-green); background: rgba(57,255,20,0.05); }
+  .quiz-feedback.fail { border-color: var(--red); color: var(--red); background: rgba(230,57,70,0.05); }
+
+  /* ===== MEMORY ===== */
+  .memory-q { border: 2px dashed rgba(255,215,0,0.3); padding: 1.2rem; margin-bottom: 1rem; text-align: center; }
+  .memory-q p { font-size: 1.05rem; margin-bottom: 1rem; color: rgba(255,251,240,0.7); }
+  .memory-options { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+  .memory-opt {
+    padding: 0.6rem 1.2rem; border: 2px solid rgba(255,255,255,0.2);
+    cursor: pointer; transition: all 0.2s ease;
+    font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: var(--cream); background: transparent;
+  }
+  .memory-opt:hover { border-color: var(--gold); color: var(--gold); }
+  .memory-opt.correct { background: var(--neon-green); color: var(--ink); border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+  .memory-opt.wrong { border-color: var(--red); opacity: 0.3; }
+
+  /* ===== CONFIRM BTN ===== */
+  .confirm-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 2px solid var(--neon-cyan); padding: 0.8rem 1.5rem;
+    font-family: 'Press Start 2P', monospace; font-size: 0.5rem;
+    cursor: pointer; color: var(--neon-cyan); background: transparent;
+    transition: all 0.2s ease; text-shadow: 0 0 5px var(--neon-cyan);
+  }
+  .confirm-btn:hover { background: var(--neon-cyan); color: var(--ink); text-shadow: none; }
+  .confirm-btn.confirmed {
+    background: var(--neon-green); color: var(--ink); border-color: var(--neon-green);
+    pointer-events: none; text-shadow: none; box-shadow: 0 0 15px var(--neon-green);
+  }
+
+  /* ===== FINAL ===== */
+  #final {
+    background: radial-gradient(circle at 50% 40%, var(--ink-light) 0%, var(--ink) 80%);
+    text-align: center; justify-content: center;
+  }
+
+  .final-stamp {
+    width: 150px; height: 150px; border: 4px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 2rem;
+    animation: stampIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    position: relative; box-shadow: 0 0 30px rgba(255,215,0,0.3);
+  }
+  .final-stamp::after { content: ''; position: absolute; inset: -10px; border: 2px dashed rgba(255,215,0,0.3); }
+  .final-stamp-inner {
+    font-family: 'Press Start 2P', monospace; font-size: 3rem;
+    color: var(--gold); text-shadow: 0 0 20px var(--gold);
+  }
+
+  .final-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1rem, 3.5vw, 1.6rem);
+    color: var(--gold);
+    text-shadow: 3px 3px 0px var(--red-dark), 0 0 20px rgba(255,215,0,0.3);
+    margin-bottom: 1.5rem; line-height: 2;
+  }
+
+  .final-stats { display: flex; gap: 2.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Press Start 2P', monospace; font-size: 1.5rem; color: var(--gold); text-shadow: 0 0 10px var(--gold); }
+  .stat-label { font-family: 'Press Start 2P', monospace; font-size: 0.35rem; letter-spacing: 1px; color: var(--neon-cyan); margin-top: 0.4rem; }
+
+  .final-photo {
+    width: 220px;
+    height: 280px;
+    border: 4px solid var(--gold);
+    margin: 0 auto 2rem;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(255,215,0,0.2);
+    position: relative;
+  }
+  .final-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .final-photo::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(transparent 70%, rgba(10,10,26,0.6) 100%);
+  }
+
+  .final-message {
+    max-width: 480px; font-size: 1.1rem; line-height: 2.2;
+    color: rgba(255,251,240,0.75); margin-bottom: 2rem;
+  }
+  .final-message strong {
+    font-family: 'Press Start 2P', monospace; font-size: 0.65rem;
+    color: var(--gold); text-shadow: 0 0 10px var(--gold);
+  }
+
+  .final-signature {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 1.4rem; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink);
+  }
+  .final-hearts { margin-top: 1rem; font-size: 1.8rem; letter-spacing: 0.5rem; animation: pulse 2s infinite; }
+
+  /* ===== TRANSITION ===== */
+  .transition-overlay {
+    position: fixed; inset: 0; background: var(--ink); z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .transition-overlay.show { opacity: 1; pointer-events: all; }
+  .transition-text {
+    font-family: 'Press Start 2P', monospace; font-size: 0.7rem;
+    letter-spacing: 3px; color: var(--gold); text-shadow: 0 0 10px var(--gold); animation: blink 0.8s infinite;
+  }
+  .transition-loading { width: 220px; height: 14px; border: 2px solid var(--gold); margin-top: 1rem; overflow: hidden; }
+  .transition-loading-fill {
+    height: 100%; width: 0%; background: var(--neon-green);
+    animation: loadFill 1s steps(10) forwards; box-shadow: 0 0 8px var(--neon-green);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 520px) {
+    html { font-size: 16px; }
+    .card { padding: 1.5rem 1.2rem; }
+    .hero-title-box { padding: 1.2rem 1.5rem; }
+    .flight-route { flex-direction: column; gap: 0.3rem; text-align: center; }
+    .btn { padding: 0.9rem 1.5rem; font-size: 0.55rem; }
+    .phrase-row { grid-template-columns: 1fr; }
+    .final-stats { gap: 1.5rem; }
+    .final-photo { width: 180px; height: 230px; }
+  }
+
+  @media (min-width: 1200px) {
+    html { font-size: 20px; }
+    .card { max-width: 650px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CRT OVERLAY (scanlines + vignette) -->
+<div class="crt-overlay" aria-hidden="true"></div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+  <span class="progress-label" id="progressLabel">0%</span>
+</div>
+
+<!-- HUD -->
+<div class="hud">
+  <div>♥♥♥</div>
+  <div class="hud-score">SCORE: <span id="hudScore">0000</span></div>
+</div>
+<div class="level-badge" id="levelBadge"></div>
+
+<!-- NAV ARROWS -->
+<button class="nav-arrow hidden" id="navPrev" onclick="navPrev()">◀</button>
+<button class="nav-arrow hidden" id="navNext" onclick="navNext()">▶</button>
+
+<!-- FULLSCREEN -->
+<button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ FULL</button>
+
+<!-- TRANSITION -->
+<div class="transition-overlay" id="transition">
+  <span class="transition-text" id="transitionText"></span>
+  <div class="transition-loading"><div class="transition-loading-fill"></div></div>
+</div>
+
+<!-- ==================== HERO ==================== -->
+<section class="screen active" id="hero" data-idx="0">
+  <div class="stars" id="stars"></div>
+  <div class="hero-insert-coin">— PRESIONA START —</div>
+  <div class="hero-top-deco">✈️</div>
+  <div class="hero-title-box">
+    <span class="corner-tr">◆</span>
+    <span class="corner-bl">◆</span>
+    <h1 class="hero-title">MISIÓN<br>ORIENTE</h1>
+    <p class="hero-subtitle">★ ACTIVADA ★</p>
+  </div>
+  <div class="hero-flags">🇨🇳 · 🇹🇷</div>
+  <div class="hero-message">
+    <span class="agent-name">AGENTE DIANA,</span><br>
+    en <strong style="color: var(--gold)">14</strong> días partimos a China & Turquía.<br>
+    Tu misión: sobrevivir, disfrutar… y no perder el pasaporte.
+  </div>
+  <div class="countdown-box">
+    <div class="countdown">DESPEGUE EN <span id="countdownNum">14</span> DÍAS</div>
+  </div>
+  <button class="btn btn-primary" onclick="goTo('level1', 'CARGANDO NIVEL 1...')">ACEPTAR MISIÓN</button>
+</section>
+
+<!-- ==================== LEVEL 1: CHECKLIST ==================== -->
+<section class="screen" id="level1" data-idx="1">
+  <div class="card card-red">
+    <div class="card-level-header">
+      <span class="card-level-num">01</span>
+      <div>
+        <div class="card-level-tag">NIVEL 1 DE 5</div>
+        <div class="card-title">CHECKLIST PRE-VIAJE</div>
+      </div>
+    </div>
+    <p class="card-desc">Todo lo que necesitás tener listo antes de subir al avión. Tocá cada ítem cuando lo tengas, agente.</p>
+    <ul class="checklist" id="checklist">
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Pasaporte vigente</span>
+        <span class="check-emoji">📘</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Acreditación Canton Fair</span>
+        <span class="check-emoji">🎫</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Medicación personal</span>
+        <span class="check-emoji">💊</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Adaptador universal de enchufe</span>
+        <span class="check-emoji">🔌</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Tarjetas + algo de efectivo (USD)</span>
+        <span class="check-emoji">💳</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Cosas de Temu</span>
+        <span class="check-emoji">📦</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Apps instaladas (VPN, traductor)</span>
+        <span class="check-emoji">📱</span>
+      </li>
+      <li onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-label">Cargador portátil (powerbank)</span>
+        <span class="check-emoji">🔋</span>
+      </li>
+    </ul>
+    <div class="chaos-meter" id="chaosMeter">
+      <div class="chaos-label" id="chaosLabel">NIVEL DE CAOS: ALTO 🔥</div>
+      <div class="chaos-bar"><div class="chaos-fill" id="chaosFill" style="width: 100%"></div></div>
+    </div>
+    <div style="text-align: center">
+      <button class="btn btn-cyan btn-disabled" id="level1Btn" onclick="goTo('level2', 'CARGANDO NIVEL 2...')">SIGUIENTE NIVEL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LEVEL 2: INTERNET ==================== -->
+<section class="screen" id="level2" data-idx="2">
+  <div class="card card-cyan">
+    <div class="card-level-header">
+      <span class="card-level-num">02</span>
+      <div>
+        <div class="card-level-tag">NIVEL 2 DE 5</div>
+        <div class="card-title">INTERNET EN CHINA</div>
+      </div>
+    </div>
+    <p class="card-desc">Esto es importante. En China, internet funciona distinto. Pero no te preocupes, ya está resuelto.</p>
+    <ul class="info-list">
+      <li>
+        <span class="info-icon">🚫</span>
+        <span><strong style="color: var(--red)">WhatsApp, Google e Instagram no funcionan</strong> en China. Es normal, no se rompió nada.</span>
+      </li>
+      <li>
+        <span class="info-icon">📡</span>
+        <span><strong style="color: var(--neon-cyan)">Vamos a comprar una eSIM en Hong Kong</strong> para tener datos y usar todo con normalidad en China.</span>
+      </li>
+      <li>
+        <span class="info-icon">🛡️</span>
+        <span><strong style="color: var(--neon-green)">Si algo falla → activar la VPN.</strong> Es una app que ya va a estar instalada en tu teléfono.</span>
+      </li>
+      <li>
+        <span class="info-icon">✅</span>
+        <span><strong style="color: var(--gold)">En Turquía funciona todo normal.</strong> Cel, WhatsApp, Instagram... todo joya.</span>
+      </li>
+    </ul>
+    <div style="text-align: center">
+      <button class="confirm-btn" id="internetConfirm" onclick="confirmInternet()">👍 ENTENDIDO, NO ENTRO EN PÁNICO</button>
+    </div>
+    <div style="text-align: center; margin-top: 1.5rem">
+      <button class="btn btn-primary btn-disabled" id="level2Btn" onclick="goTo('level3', 'CARGANDO NIVEL 3...')">SIGUIENTE NIVEL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LEVEL 3: VUELOS ==================== -->
+<section class="screen" id="level3" data-idx="3">
+  <div class="card card-gold">
+    <div class="card-level-header">
+      <span class="card-level-num">03</span>
+      <div>
+        <div class="card-level-tag">NIVEL 3 DE 5</div>
+        <div class="card-title">NUESTROS VUELOS</div>
+      </div>
+    </div>
+    <p class="card-desc">Turkish Airlines, clase económica. 4 vuelos, 3 semanas, 2 continentes. Prestá atención, después hay quiz.</p>
+    <div class="flight-card">
+      <div class="flight-tag">VUELO 1 — TK 016 · AIRBUS A350</div>
+      <div class="flight-route">
+        <span class="flight-city">BUE 🇦🇷</span>
+        <span class="flight-arrow">✈→</span>
+        <span class="flight-city">IST 🇹🇷</span>
+      </div>
+      <div class="flight-detail">Dom 19 Abril, 23:55 → Lun 20 Abril, 22:45<br>Escala: São Paulo (1h40) · Total: 16h50</div>
+    </div>
+    <div class="flight-card" style="border-color: var(--neon-cyan)">
+      <div class="flight-tag">VUELO 2 — TK 070 · BOEING 777</div>
+      <div class="flight-route">
+        <span class="flight-city">IST 🇹🇷</span>
+        <span class="flight-arrow">✈→</span>
+        <span class="flight-city">HKG 🇭🇰</span>
+      </div>
+      <div class="flight-detail">Mar 21 Abril, 01:35 → Mar 21 Abril, 17:20<br>Directo · Total: 10h45</div>
+    </div>
+    <div class="flight-card" style="border-color: var(--neon-green)">
+      <div class="flight-tag">VUELO 3 — TK 027 · BOEING 777</div>
+      <div class="flight-route">
+        <span class="flight-city">SHA 🇨🇳</span>
+        <span class="flight-arrow">✈→</span>
+        <span class="flight-city">IST 🇹🇷</span>
+      </div>
+      <div class="flight-detail">Dom 3 Mayo, 22:25 → Lun 4 Mayo, 05:25<br>Directo · Total: 12h00</div>
+    </div>
+    <div class="flight-card" style="border-color: var(--neon-pink)">
+      <div class="flight-tag">VUELO 4 — TK 015 · AIRBUS A350</div>
+      <div class="flight-route">
+        <span class="flight-city">IST 🇹🇷</span>
+        <span class="flight-arrow">✈→</span>
+        <span class="flight-city">BUE 🇦🇷</span>
+      </div>
+      <div class="flight-detail">Sáb 9 Mayo, 09:55 → Sáb 9 Mayo, 22:25<br>Escala: São Paulo (1h35) · Total: 18h30</div>
+    </div>
+    <div class="pixel-divider">◆ ◆ ◆ PRUEBA DE MEMORIA ◆ ◆ ◆</div>
+    <div class="memory-q" id="memoryQ1">
+      <p>🧠 <strong style="color: var(--gold)">¿Dónde hacemos escala en el primer vuelo?</strong></p>
+      <div class="memory-options">
+        <span class="memory-opt" onclick="checkMemory(this, false)">SANTIAGO</span>
+        <span class="memory-opt" onclick="checkMemory(this, true)">SÃO PAULO</span>
+        <span class="memory-opt" onclick="checkMemory(this, false)">LIMA</span>
+      </div>
+    </div>
+    <div class="memory-q" id="memoryQ2" style="display: none">
+      <p>🧠 <strong style="color: var(--gold)">¿Qué día llegamos a Shanghái?</strong></p>
+      <div class="memory-options">
+        <span class="memory-opt" onclick="checkMemory2(this, false)">1 DE MAYO</span>
+        <span class="memory-opt" onclick="checkMemory2(this, true)">3 DE MAYO</span>
+        <span class="memory-opt" onclick="checkMemory2(this, false)">5 DE MAYO</span>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 1.5rem">
+      <button class="btn btn-red btn-disabled" id="level3Btn" onclick="goTo('level4', 'CARGANDO NIVEL 4...')">SIGUIENTE NIVEL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LEVEL 4: IDIOMA ==================== -->
+<section class="screen" id="level4" data-idx="4">
+  <div class="card card-green">
+    <div class="card-level-header">
+      <span class="card-level-num">04</span>
+      <div>
+        <div class="card-level-tag">NIVEL 4 DE 5</div>
+        <div class="card-title">FRASES DE SUPERVIVENCIA</div>
+      </div>
+    </div>
+    <p class="card-desc">No hace falta hablar perfecto. Con estas palabras ya ganás +100 puntos de simpatía local.</p>
+    <div class="phrase-section">
+      <div class="phrase-header china">🇨🇳 MANDARÍN — CHINA</div>
+      <div class="phrase-row"><span class="phrase-word">你好 (Nǐ hǎo)</span><span class="phrase-pron">ni jao</span><span class="phrase-es">→ Hola</span></div>
+      <div class="phrase-row"><span class="phrase-word">谢谢 (Xièxiè)</span><span class="phrase-pron">shie shie</span><span class="phrase-es">→ Gracias</span></div>
+      <div class="phrase-row"><span class="phrase-word">卫生间 (Wèishēngjiān)</span><span class="phrase-pron">uei sheng yien</span><span class="phrase-es">→ Baño</span></div>
+      <div class="phrase-row"><span class="phrase-word">听不懂 (Tīng bù dǒng)</span><span class="phrase-pron">ting bu dong</span><span class="phrase-es">→ No entiendo</span></div>
+      <div class="phrase-row"><span class="phrase-word">多少钱 (Duōshǎo qián)</span><span class="phrase-pron">duo shao chien</span><span class="phrase-es">→ ¿Cuánto cuesta?</span></div>
+    </div>
+    <div class="pixel-divider">◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆</div>
+    <div class="phrase-section">
+      <div class="phrase-header turkey">🇹🇷 TURCO — TURQUÍA</div>
+      <div class="phrase-row"><span class="phrase-word">Merhaba</span><span class="phrase-pron">mer-ja-ba</span><span class="phrase-es">→ Hola</span></div>
+      <div class="phrase-row"><span class="phrase-word">Teşekkür ederim</span><span class="phrase-pron">te-she-kur ede-rim</span><span class="phrase-es">→ Gracias</span></div>
+      <div class="phrase-row"><span class="phrase-word">Ne kadar?</span><span class="phrase-pron">ne ka-dar</span><span class="phrase-es">→ ¿Cuánto cuesta?</span></div>
+      <div class="phrase-row"><span class="phrase-word">Tuvalet nerede?</span><span class="phrase-pron">tu-va-let ne-re-de</span><span class="phrase-es">→ ¿Dónde está el baño?</span></div>
+      <div class="phrase-row"><span class="phrase-word">Çok güzel!</span><span class="phrase-pron">chok gu-zel</span><span class="phrase-es">→ ¡Muy lindo!</span></div>
+    </div>
+    <div style="text-align: center; margin-top: 1.5rem">
+      <button class="btn btn-primary" onclick="goTo('level5', 'CARGANDO QUIZ FINAL...')">SIGUIENTE NIVEL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LEVEL 5: QUIZ ==================== -->
+<section class="screen" id="level5" data-idx="5">
+  <div class="card card-red">
+    <div class="card-level-header">
+      <span class="card-level-num">05</span>
+      <div>
+        <div class="card-level-tag">NIVEL FINAL</div>
+        <div class="card-title">EXAMEN FINAL</div>
+      </div>
+    </div>
+    <p class="card-desc">3 preguntas. No googlees. Confiá en lo que aprendiste, agente Diana.</p>
+    <div id="quizContainer"></div>
+    <div style="text-align: center; margin-top: 1rem">
+      <button class="btn btn-primary btn-disabled" id="level5Btn" onclick="goTo('final', 'PROCESANDO RESULTADO...')">VER RESULTADO FINAL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FINAL ==================== -->
+<section class="screen" id="final" data-idx="6">
+  <div class="final-stamp">
+    <span class="final-stamp-inner">★</span>
+  </div>
+  <h2 class="final-title">MISIÓN<br>COMPLETADA</h2>
+  <div class="final-stats">
+    <div class="stat"><div class="stat-num" id="finalScore">0</div><div class="stat-label">CORRECTAS</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">NIVELES</div></div>
+    <div class="stat"><div class="stat-num">20</div><div class="stat-label">DÍAS</div></div>
+  </div>
+  <div class="final-photo">
+    <img src="foto diana y nati.png" alt="Nati y Diana" onerror="this.parentElement.style.display='none'">
+  </div>
+  <div class="final-message">
+    Agente Diana, estás oficialmente lista.<br><br>
+    Ya sabés dónde hacemos escala, cómo decir gracias en mandarín, y que si WhatsApp no anda en China no es el fin del mundo.<br><br>
+    Lo más importante de este viaje no es la feria, ni los vuelos, ni los idiomas.<br><br>
+    <strong>LO MÁS IMPORTANTE ES QUE LO HACEMOS JUNTAS.</strong>
+  </div>
+  <div class="final-signature">Con amor, Nati</div>
+  <div class="final-hearts">❤️ ❤️ ❤️</div>
+</section>
+
+<script>
+  // ===== STARS =====
+  (function() {
+    const c = document.getElementById('stars');
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.left = Math.random()*100+'%';
+      s.style.top = Math.random()*100+'%';
+      s.style.animationDelay = Math.random()*3+'s';
+      s.style.opacity = Math.random()*0.5+0.2;
+      if (Math.random()>0.7) s.style.background='var(--neon-cyan)';
+      if (Math.random()>0.9) s.style.background='var(--neon-pink)';
+      c.appendChild(s);
+    }
+  })();
+
+  // ===== STATE =====
+  let checkedItems = 0;
+  const totalCheckItems = 8;
+  let quizScore = 0;
+  let memoryDone = 0;
+  let totalScore = 0;
+
+  const screenOrder = ['hero','level1','level2','level3','level4','level5','final'];
+  let currentScreenIdx = 0;
+  let maxReached = 0;
+
+  // ===== COUNTDOWN =====
+  const tripDate = new Date(2026, 3, 19); // April 19, 2026 (month is 0-indexed)
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysLeft = Math.max(0, Math.round((tripDate - todayMidnight) / (1000*60*60*24)));
+  document.getElementById('countdownNum').textContent = daysLeft;
+
+  // ===== FULLSCREEN =====
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  // ===== HUD =====
+  function updateHUD() {
+    document.getElementById('hudScore').textContent = String(totalScore * 100).padStart(4, '0');
+  }
+
+  // ===== NAV ARROWS =====
+  function updateNavArrows() {
+    const prev = document.getElementById('navPrev');
+    const next = document.getElementById('navNext');
+
+    if (currentScreenIdx <= 0) {
+      prev.classList.add('hidden');
+    } else {
+      prev.classList.remove('hidden');
+    }
+
+    if (currentScreenIdx >= maxReached || currentScreenIdx >= screenOrder.length - 1) {
+      next.classList.add('hidden');
+    } else {
+      next.classList.remove('hidden');
+    }
+  }
+
+  function navPrev() {
+    if (currentScreenIdx > 0) {
+      switchScreen(screenOrder[currentScreenIdx - 1]);
+    }
+  }
+
+  function navNext() {
+    if (currentScreenIdx < maxReached) {
+      switchScreen(screenOrder[currentScreenIdx + 1]);
+    }
+  }
+
+  function switchScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    currentScreenIdx = screenOrder.indexOf(screenId);
+    updateProgress(screenId);
+    updateNavArrows();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // ===== NAVIGATION =====
+  function goTo(screenId, label) {
+    const overlay = document.getElementById('transition');
+    const text = document.getElementById('transitionText');
+    text.textContent = label;
+    overlay.classList.add('show');
+    const bar = overlay.querySelector('.transition-loading-fill');
+    bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = 'loadFill 1s steps(10) forwards';
+
+    setTimeout(() => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      currentScreenIdx = screenOrder.indexOf(screenId);
+      if (currentScreenIdx > maxReached) maxReached = currentScreenIdx;
+      updateProgress(screenId);
+      updateNavArrows();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      setTimeout(() => overlay.classList.remove('show'), 400);
+    }, 1200);
+  }
+
+  function updateProgress(screenId) {
+    const map = { hero:0, level1:15, level2:35, level3:55, level4:75, level5:90, final:100 };
+    const labels = { hero:'', level1:'LVL 1/5', level2:'LVL 2/5', level3:'LVL 3/5', level4:'LVL 4/5', level5:'LVL 5/5', final:'★ COMPLETE' };
+    const pct = map[screenId] || 0;
+    document.getElementById('progressFill').style.width = pct+'%';
+    document.getElementById('progressLabel').textContent = pct+'%';
+    document.getElementById('levelBadge').textContent = labels[screenId] || '';
+  }
+
+  // ===== CHECKLIST =====
+  function toggleCheck(li) {
+    const was = li.classList.contains('checked');
+    li.classList.toggle('checked');
+    if (was) { checkedItems--; li.querySelector('.check-box').textContent=''; totalScore--; }
+    else { checkedItems++; li.querySelector('.check-box').textContent='✓'; totalScore++; }
+    updateChaos(); updateHUD();
+    const btn = document.getElementById('level1Btn');
+    if (checkedItems >= Math.ceil(totalCheckItems*0.6)) btn.classList.remove('btn-disabled');
+    else btn.classList.add('btn-disabled');
+  }
+
+  function updateChaos() {
+    const pct = ((totalCheckItems-checkedItems)/totalCheckItems)*100;
+    document.getElementById('chaosFill').style.width = pct+'%';
+    const fill = document.getElementById('chaosFill');
+    const label = document.getElementById('chaosLabel');
+    if (pct > 60) {
+      label.textContent='NIVEL DE CAOS: ALTO 🔥';
+      fill.style.background='repeating-linear-gradient(90deg,var(--red) 0px,var(--red) 6px,#AA0000 6px,#AA0000 8px)';
+      fill.style.boxShadow='0 0 8px var(--red)';
+    } else if (pct > 30) {
+      label.textContent='NIVEL DE CAOS: MEDIO ⚠️';
+      fill.style.background='repeating-linear-gradient(90deg,var(--gold) 0px,var(--gold) 6px,#CC9900 6px,#CC9900 8px)';
+      fill.style.boxShadow='0 0 8px var(--gold)';
+    } else {
+      label.textContent='NIVEL DE CAOS: BAJO ✨';
+      fill.style.background='repeating-linear-gradient(90deg,var(--neon-green) 0px,var(--neon-green) 6px,#00CC00 6px,#00CC00 8px)';
+      fill.style.boxShadow='0 0 8px var(--neon-green)';
+    }
+  }
+
+  // ===== INTERNET =====
+  function confirmInternet() {
+    const btn = document.getElementById('internetConfirm');
+    btn.classList.add('confirmed');
+    btn.textContent='✅ ENTENDIDO — READY';
+    totalScore++; updateHUD();
+    document.getElementById('level2Btn').classList.remove('btn-disabled');
+  }
+
+  // ===== MEMORY =====
+  function checkMemory(el, correct) {
+    el.closest('.memory-q').querySelectorAll('.memory-opt').forEach(o => {
+      o.style.pointerEvents='none';
+      if (o===el) o.classList.add(correct?'correct':'wrong');
+    });
+    if (correct) { quizScore++; totalScore++; updateHUD(); }
+    memoryDone++;
+    if (memoryDone===1) setTimeout(()=>{
+      document.getElementById('memoryQ2').style.display='block';
+      document.getElementById('memoryQ2').style.animation='slideUp 0.4s ease-out';
+    }, 500);
+    if (memoryDone>=2) setTimeout(()=>document.getElementById('level3Btn').classList.remove('btn-disabled'), 600);
+  }
+
+  function checkMemory2(el, correct) {
+    el.closest('.memory-q').querySelectorAll('.memory-opt').forEach(o => {
+      o.style.pointerEvents='none';
+      if (o===el) o.classList.add(correct?'correct':'wrong');
+    });
+    if (correct) { quizScore++; totalScore++; updateHUD(); }
+    memoryDone++;
+    if (memoryDone>=2) setTimeout(()=>document.getElementById('level3Btn').classList.remove('btn-disabled'), 600);
+  }
+
+  // ===== QUIZ =====
+  const quizData = [
+    {
+      q: '¿Qué hacer si WhatsApp no funciona en China?',
+      opts: ['Entrar en pánico y llamar a la embajada', 'Activar la VPN que ya tenemos', 'Mandar una paloma mensajera'],
+      correct: 1,
+      fb: '¡Exacto! La VPN resuelve todo. Ya la vamos a tener lista.'
+    },
+    {
+      q: '¿Qué NO puede faltar en el viaje?',
+      opts: ['Crema Hinds y auriculares', 'Almohadita de viaje', 'Todas las anteriores'],
+      correct: 2,
+      fb: '¡Obvio! Crema Hinds, auriculares Y almohadita. Las tres son sagradas. 👑'
+    },
+    {
+      q: '¿Cómo se dice "gracias" en mandarín?',
+      opts: ['Merhaba', 'Nǐ hǎo', 'Xièxiè'],
+      correct: 2,
+      fb: '👏 Xièxiè! Con eso ya ganás sonrisas en cualquier mercado.'
+    }
+  ];
+
+  let currentQuiz = 0;
+  const letters = ['A)','B)','C)'];
+
+  function renderQuiz() {
+    const container = document.getElementById('quizContainer');
+    if (currentQuiz >= quizData.length) {
+      document.getElementById('finalScore').textContent = quizScore+'/'+(quizData.length+2);
+      document.getElementById('level5Btn').classList.remove('btn-disabled');
+      return;
+    }
+    const q = quizData[currentQuiz];
+    container.innerHTML = `
+      <div class="quiz-counter">PREGUNTA ${currentQuiz+1} / ${quizData.length}</div>
+      <div class="quiz-question">${q.q}</div>
+      <ul class="quiz-options">
+        ${q.opts.map((opt,i)=>`<li class="quiz-option" data-letter="${letters[i]}" onclick="answerQuiz(${i},${q.correct},this)">${opt}</li>`).join('')}
+      </ul>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    `;
+  }
+
+  function answerQuiz(chosen, correct, el) {
+    el.parentElement.querySelectorAll('.quiz-option').forEach((opt,i)=>{
+      opt.classList.add('disabled');
+      if (i===correct) opt.classList.add('correct');
+      if (i===chosen && chosen!==correct) opt.classList.add('wrong');
+    });
+    const ok = chosen===correct;
+    if (ok) { quizScore++; totalScore++; updateHUD(); }
+    const fb = document.getElementById('quizFeedback');
+    fb.classList.add('show', ok?'success':'fail');
+    fb.innerHTML = ok ? '✅ '+quizData[currentQuiz].fb : '❌ La correcta era: <strong>'+quizData[currentQuiz].opts[correct]+'</strong>';
+    currentQuiz++;
+    setTimeout(renderQuiz, 2200);
+  }
+
+  // ===== KEYBOARD NAV =====
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') navPrev();
+    if (e.key === 'ArrowRight') navNext();
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  });
+
+  // ===== INIT =====
+  renderQuiz();
+  updateHUD();
+  updateNavArrows();
+</script>
+</body>
+</html>
