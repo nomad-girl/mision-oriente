@@ -567,7 +567,12 @@
   /* ===== FINAL ===== */
   #final {
     background: radial-gradient(circle at 50% 40%, var(--ink-light) 0%, var(--ink) 80%);
-    text-align: center; justify-content: center;
+    text-align: center; justify-content: flex-start;
+    height: 100vh;
+    min-height: auto;
+    overflow-y: auto;
+    padding-top: 2.5rem;
+    padding-bottom: 2rem;
   }
 
   .final-stamp {
@@ -598,12 +603,13 @@
 
   .final-photo {
     width: 220px;
-    height: 280px;
+    min-height: 280px;
     border: 4px solid var(--gold);
     margin: 0 auto 2rem;
     overflow: hidden;
     box-shadow: 0 0 30px rgba(255,215,0,0.2);
     position: relative;
+    flex-shrink: 0;
   }
   .final-photo img {
     width: 100%;
@@ -615,7 +621,7 @@
     background: linear-gradient(transparent 70%, rgba(10,10,26,0.6) 100%);
   }
 
-  .final-message {
+  .final-message { flex-shrink: 0;
     max-width: 480px; font-size: 1.1rem; line-height: 2.2;
     color: rgba(255,251,240,0.75); margin-bottom: 2rem;
   }
@@ -713,7 +719,7 @@
   <div class="hero-message">
     <span class="agent-name">AGENTE DIANA,</span><br>
     en <strong style="color: var(--gold)">14</strong> días partimos a China & Turquía.<br>
-    Tu misión: sobrevivir, disfrutar… y no perder el pasaporte.
+    Tu misión: sobrevivir a los vuelos, disfrutar, hacer negocios y no perder el pasaporte!
   </div>
   <div class="countdown-box">
     <div class="countdown">DESPEGUE EN <span id="countdownNum">14</span> DÍAS</div>
@@ -902,12 +908,12 @@
         <div class="card-title">FRASES DE SUPERVIVENCIA</div>
       </div>
     </div>
-    <p class="card-desc">No hace falta hablar perfecto. Con estas palabras ya ganás +100 puntos de simpatía local.</p>
+    <p class="card-desc">Con estas palabras ya podés regatear en cualquier mercado.</p>
     <div class="phrase-section">
       <div class="phrase-header china">🇨🇳 MANDARÍN — CHINA</div>
       <div class="phrase-row"><span class="phrase-word">你好 (Nǐ hǎo)</span><span class="phrase-pron">ni jao</span><span class="phrase-es">→ Hola</span></div>
       <div class="phrase-row"><span class="phrase-word">谢谢 (Xièxiè)</span><span class="phrase-pron">shie shie</span><span class="phrase-es">→ Gracias</span></div>
-      <div class="phrase-row"><span class="phrase-word">卫生间 (Wèishēngjiān)</span><span class="phrase-pron">uei sheng yien</span><span class="phrase-es">→ Baño</span></div>
+      <div class="phrase-row"><span class="phrase-word">便宜一点 (Piányi yīdiǎn)</span><span class="phrase-pron">pien-i i-dien</span><span class="phrase-es">→ Más barato</span></div>
       <div class="phrase-row"><span class="phrase-word">听不懂 (Tīng bù dǒng)</span><span class="phrase-pron">ting bu dong</span><span class="phrase-es">→ No entiendo</span></div>
       <div class="phrase-row"><span class="phrase-word">多少钱 (Duōshǎo qián)</span><span class="phrase-pron">duo shao chien</span><span class="phrase-es">→ ¿Cuánto cuesta?</span></div>
     </div>
@@ -946,23 +952,20 @@
 
 <!-- ==================== FINAL ==================== -->
 <section class="screen" id="final" data-idx="6">
-  <div class="final-stamp">
-    <span class="final-stamp-inner">★</span>
-  </div>
   <h2 class="final-title">MISIÓN<br>COMPLETADA</h2>
   <div class="final-stats">
     <div class="stat"><div class="stat-num" id="finalScore">0</div><div class="stat-label">CORRECTAS</div></div>
     <div class="stat"><div class="stat-num">5</div><div class="stat-label">NIVELES</div></div>
-    <div class="stat"><div class="stat-num">20</div><div class="stat-label">DÍAS</div></div>
-  </div>
-  <div class="final-photo">
-    <img src="foto diana y nati.png" alt="Nati y Diana" onerror="this.parentElement.style.display='none'">
+    <div class="stat"><div class="stat-num" id="finalDays">14</div><div class="stat-label">DÍAS</div></div>
   </div>
   <div class="final-message">
-    Agente Diana, estás oficialmente lista.<br><br>
-    Ya sabés dónde hacemos escala, cómo decir gracias en mandarín, y que si WhatsApp no anda en China no es el fin del mundo.<br><br>
-    Lo más importante de este viaje no es la feria, ni los vuelos, ni los idiomas.<br><br>
-    <strong>LO MÁS IMPORTANTE ES QUE LO HACEMOS JUNTAS.</strong>
+    Agente Diana, estás lista.<br><br>
+    Ya sabés lo importante… y el resto lo vamos a ir descubriendo en el camino.<br><br>
+    Porque al final, lo más importante de este viaje no es China, ni Turquía, ni la feria.<br><br>
+    <strong>Lo más importante es que lo hacemos juntas.</strong>
+  </div>
+  <div class="final-photo">
+    <img src="foto%20diana%20y%20nati.png" alt="Nati y Diana" onerror="this.parentElement.style.display='none'">
   </div>
   <div class="final-signature">Con amor, Nati</div>
   <div class="final-hearts">❤️ ❤️ ❤️</div>
@@ -1002,6 +1005,7 @@
   const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const daysLeft = Math.max(0, Math.round((tripDate - todayMidnight) / (1000*60*60*24)));
   document.getElementById('countdownNum').textContent = daysLeft;
+  document.getElementById('finalDays').textContent = daysLeft;
 
   // ===== FULLSCREEN =====
   function toggleFullscreen() {
