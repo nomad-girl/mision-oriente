@@ -1030,7 +1030,7 @@
       prev.classList.remove('hidden');
     }
 
-    if (currentScreenIdx >= maxReached || currentScreenIdx >= screenOrder.length - 1) {
+    if (currentScreenIdx === 0 || currentScreenIdx >= maxReached || currentScreenIdx >= screenOrder.length - 1) {
       next.classList.add('hidden');
     } else {
       next.classList.remove('hidden');
