@@ -695,8 +695,6 @@
 <button class="nav-arrow hidden" id="navPrev" onclick="navPrev()">◀</button>
 <button class="nav-arrow hidden" id="navNext" onclick="navNext()">▶</button>
 
-<!-- FULLSCREEN -->
-<button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ FULL</button>
 
 <!-- TRANSITION -->
 <div class="transition-overlay" id="transition">
@@ -737,7 +735,7 @@
         <div class="card-title">CHECKLIST PRE-VIAJE</div>
       </div>
     </div>
-    <p class="card-desc">Todo lo que necesitás tener listo antes de subir al avión. Tocá cada ítem cuando lo tengas, agente.</p>
+    <p class="card-desc">Todo lo que necesitás tener listo antes de subir al avión. Tocá cada ítem cuando lo tengas agente.</p>
     <ul class="checklist" id="checklist">
       <li onclick="toggleCheck(this)">
         <div class="check-box"></div>
@@ -922,9 +920,9 @@
       <div class="phrase-header turkey">🇹🇷 TURCO — TURQUÍA</div>
       <div class="phrase-row"><span class="phrase-word">Merhaba</span><span class="phrase-pron">mer-ja-ba</span><span class="phrase-es">→ Hola</span></div>
       <div class="phrase-row"><span class="phrase-word">Teşekkür ederim</span><span class="phrase-pron">te-she-kur ede-rim</span><span class="phrase-es">→ Gracias</span></div>
+      <div class="phrase-row"><span class="phrase-word">Daha ucuz</span><span class="phrase-pron">da-ja u-yuz</span><span class="phrase-es">→ Más barato</span></div>
+      <div class="phrase-row"><span class="phrase-word">Anlamıyorum</span><span class="phrase-pron">an-la-mu-yo-rum</span><span class="phrase-es">→ No entiendo</span></div>
       <div class="phrase-row"><span class="phrase-word">Ne kadar?</span><span class="phrase-pron">ne ka-dar</span><span class="phrase-es">→ ¿Cuánto cuesta?</span></div>
-      <div class="phrase-row"><span class="phrase-word">Tuvalet nerede?</span><span class="phrase-pron">tu-va-let ne-re-de</span><span class="phrase-es">→ ¿Dónde está el baño?</span></div>
-      <div class="phrase-row"><span class="phrase-word">Çok güzel!</span><span class="phrase-pron">chok gu-zel</span><span class="phrase-es">→ ¡Muy lindo!</span></div>
     </div>
     <div style="text-align: center; margin-top: 1.5rem">
       <button class="btn btn-primary" onclick="goTo('level5', 'CARGANDO QUIZ FINAL...')">SIGUIENTE NIVEL</button>
@@ -942,7 +940,7 @@
         <div class="card-title">EXAMEN FINAL</div>
       </div>
     </div>
-    <p class="card-desc">3 preguntas. No googlees. Confiá en lo que aprendiste, agente Diana.</p>
+    <p class="card-desc">3 preguntas. No googlees. Confiá en lo que aprendiste agente Diana.</p>
     <div id="quizContainer"></div>
     <div style="text-align: center; margin-top: 1rem">
       <button class="btn btn-primary btn-disabled" id="level5Btn" onclick="goTo('final', 'PROCESANDO RESULTADO...')">VER RESULTADO FINAL</button>
